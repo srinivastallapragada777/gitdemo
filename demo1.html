@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CareerPulse — Job Application Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: rgba(21, 28, 44, 0.65);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent-blue: #38bdf8;
+      --accent-purple: #a855f7;
+      --accent-green: #34d399;
+      --accent-amber: #fbbf24;
+      --glass-gloss: rgba(255, 255, 255, 0.03);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(168, 85, 247, 0.12) 0%, transparent 40%);
+    }
+
+    .app-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .logo {
+      font-weight: 700;
+      font-size: 1.5rem;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #38bdf8, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      color: #0f172a;
+      font-weight: 600;
+      border: none;
+      padding: 0.75rem 1.25rem;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 20px rgba(56, 189, 248, 0.2);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(56, 189, 248, 0.35);
+    }
+
+    /* Analytics Dashboard */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .metric-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(12px);
+      padding: 1.5rem;
+      border-radius: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .metric-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    }
+
+    .metric-title {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    .metric-value {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -1px;
+    }
+
+    /* Form Card */
+    .form-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(16px);
+      border-radius: 20px;
+      padding: 1.75rem;
+      margin-bottom: 2.5rem;
+      display: none;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    input, select {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--card-border);
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      color: var(--text-main);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent-blue);
+    }
+
+    /* Board View */
+    .tracker-board {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .board-column {
+      background: rgba(15, 23, 42, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 20px;
+      padding: 1.25rem;
+      min-height: 400px;
+    }
+
+    .column-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .column-title {
+      font-weight: 600;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .job-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(8px);
+      padding: 1.25rem;
+      border-radius: 14px;
+      margin-bottom: 1rem;
+      transition: transform 0.2s, border-color 0.2s;
+      cursor: pointer;
+    }
+
+    .job-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .job-role {
+      font-weight: 600;
+      font-size: 1.05rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .job-company {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+    }
+
+    .job-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+    }
+
+    .status-badge {
+      padding: 0.25rem 0.6rem;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .status-applied { background: rgba(56, 189, 248, 0.15); color: var(--accent-blue); }
+    .status-interviewing { background: rgba(251, 191, 36, 0.15); color: var(--accent-amber); }
+    .status-offered { background: rgba(52, 211, 153, 0.15); color: var(--accent-green); }
+
+    .btn-delete {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+
+    .btn-delete:hover { color: #f87171; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <header>
+      <div class="logo">CareerPulse</div>
+      <button class="btn-primary" id="toggleFormBtn">+ New Application</button>
+    </header>
+
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-title">Total Applications</div>
+        <div class="metric-value" id="metric-total">0</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">In Progress</div>
+        <div class="metric-value" style="color: var(--accent-amber)" id="metric-active">0</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">Offers Received</div>
+        <div class="metric-value" style="color: var(--accent-green)" id="metric-offers">0</div>
+      </div>
+    </div>
+
+    <div class="form-card" id="jobForm">
+      <div class="form-grid">
+        <input type="text" id="roleInput" placeholder="Role (e.g. Product Designer)">
+        <input type="text" id="companyInput" placeholder="Company">
+        <select id="statusInput">
+          <option value="Applied">Applied</option>
+          <option value="Interviewing">Interviewing</option>
+          <option value="Offered">Offered</option>
+        </select>
+      </div>
+      <button class="btn-primary" id="addJobBtn" style="width: 100%;">Save Application</button>
+    </div>
+
+    <div class="tracker-board">
+      <div class="board-column">
+        <div class="column-header">
+          <span class="column-title">Applied</span>
+        </div>
+        <div class="job-list" id="list-applied"></div>
+      </div>
+
+      <div class="board-column">
+        <div class="column-header">
+          <span class="column-title">Interviewing</span>
+        </div>
+        <div class="job-list" id="list-interviewing"></div>
+      </div>
+
+      <div class="board-column">
+        <div class="column-header">
+          <span class="column-title">Offered</span>
+        </div>
+        <div class="job-list" id="list-offered"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let applications = JSON.parse(localStorage.getItem('pulse_jobs')) || [
+      { id: 1, role: 'Senior UX Architect', company: 'Linear', status: 'Interviewing', date: '2026-08-28' },
+      { id: 2, role: 'Frontend Engineer', company: 'Vercel', status: 'Applied', date: '2026-08-30' },
+      { id: 3, role: 'Product Lead', company: 'Stripe', status: 'Offered', date: '2026-08-15' }
+    ];
+
+    const form = document.getElementById('jobForm');
+    const toggleBtn = document.getElementById('toggleFormBtn');
+    const addBtn = document.getElementById('addJobBtn');
+
+    toggleBtn.addEventListener('click', () => {
+      form.style.display = form.style.display === 'block' ? 'none' : 'block';
+    });
+
+    addBtn.addEventListener('click', () => {
+      const role = document.getElementById('roleInput').value;
+      const company = document.getElementById('companyInput').value;
+      const status = document.getElementById('statusInput').value;
+
+      if (!role || !company) return;
+
+      const newJob = {
+        id: Date.now(),
+        role,
+        company,
+        status,
+        date: new Date().toISOString().split('T')[0]
+      };
+
+      applications.push(newJob);
+      saveAndRender();
+      
+      document.getElementById('roleInput').value = '';
+      document.getElementById('companyInput').value = '';
+      form.style.display = 'none';
+    });
+
+    function deleteJob(id) {
+      applications = applications.filter(job => job.id !== id);
+      saveAndRender();
+    }
+
+    function updateMetrics() {
+      document.getElementById('metric-total').innerText = applications.length;
+      document.getElementById('metric-active').innerText = applications.filter(a => a.status === 'Interviewing' || a.status === 'Applied').length;
+      document.getElementById('metric-offers').innerText = applications.filter(a => a.status === 'Offered').length;
+    }
+
+    function saveAndRender() {
+      localStorage.setItem('pulse_jobs', JSON.stringify(applications));
+      
+      const lists = {
+        Applied: document.getElementById('list-applied'),
+        Interviewing: document.getElementById('list-interviewing'),
+        Offered: document.getElementById('list-offered')
+      };
+
+      Object.values(lists).forEach(el => el.innerHTML = '');
+
+      applications.forEach(job => {
+        const card = document.createElement('div');
+        card.className = 'job-card';
+        card.innerHTML = `
+          <div class="job-role">${job.role}</div>
+          <div class="job-company">${job.company}</div>
+          <div class="job-meta">
+            <span class="status-badge status-${job.status.toLowerCase()}">${job.status}</span>
+            <button class="btn-delete" onclick="deleteJob(${job.id})">Delete</button>
+          </div>
+        `;
+        if (lists[job.status]) {
+          lists[job.status].appendChild(card);
+        }
+      });
+
+      updateMetrics();
+    }
+
+    // Initial Render
+    saveAndRender();
+  </script>
+</body>
+</html>

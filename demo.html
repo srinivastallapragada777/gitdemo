@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JobTrack - Job Application Tracker</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root{
+  --bg:#f5f7fb;--card:#fff;--text:#172033;--muted:#6b7280;
+  --primary:#4f46e5;--primary2:#7c3aed;--border:#e5e7eb;
+  --green:#16a34a;--red:#dc2626;--orange:#ea580c;--blue:#2563eb;
+  --shadow:0 12px 30px rgba(30,41,59,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer;border:0}
+.app{display:flex;min-height:100vh}
+.sidebar{width:250px;background:#111827;color:#fff;padding:24px 16px;position:fixed;inset:0 auto 0 0;z-index:10}
+.logo{display:flex;align-items:center;gap:10px;font-size:23px;font-weight:800;padding:8px 12px 28px}
+.logo span{background:linear-gradient(135deg,#6366f1,#a855f7);width:38px;height:38px;border-radius:12px;display:grid;place-items:center}
+.nav button{width:100%;text-align:left;background:transparent;color:#cbd5e1;padding:13px 14px;border-radius:10px;margin:3px 0;font-weight:600}
+.nav button:hover,.nav button.active{background:#252d3d;color:#fff}
+.nav button span{display:inline-block;width:28px}
+.sidebar-bottom{position:absolute;bottom:20px;left:16px;right:16px}
+.theme-btn{width:100%;padding:11px;border-radius:10px;background:#1f2937;color:#fff}
+.main{margin-left:250px;width:calc(100% - 250px);padding:28px}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:26px}
+.topbar h1{font-size:28px}
+.topbar p{color:var(--muted);margin-top:5px}
+.primary{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;padding:12px 18px;border-radius:10px;font-weight:700;box-shadow:0 8px 18px rgba(79,70,229,.25)}
+.primary:hover{transform:translateY(-1px)}
+.page{display:none}.page.active{display:block}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:22px}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;box-shadow:var(--shadow)}
+.stat .icon{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;margin-bottom:13px;font-size:20px}
+.stat h3{font-size:28px}.stat p{color:var(--muted);font-size:14px;margin-top:4px}
+.i1{background:#e0e7ff}.i2{background:#dbeafe}.i3{background:#dcfce7}.i4{background:#fee2e2}
+.grid{display:grid;grid-template-columns:1.6fr 1fr;gap:20px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;box-shadow:var(--shadow)}
+.card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.card-head h2{font-size:18px}.muted{color:var(--muted)}
+.chart-box{height:280px}
+.searchbar{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.searchbar input,.searchbar select{padding:11px 13px;border:1px solid var(--border);border-radius:10px;background:var(--card);color:var(--text)}
+.searchbar input{flex:1;min-width:200px}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:14px 12px;border-bottom:1px solid var(--border);font-size:14px}
+th{color:var(--muted);font-size:12px;text-transform:uppercase}
+.company{font-weight:700}.role{color:var(--muted);margin-top:3px;font-size:12px}
+.badge{display:inline-block;padding:6px 9px;border-radius:999px;font-size:12px;font-weight:700}
+.applied{background:#dbeafe;color:#1d4ed8}.interview{background:#fef3c7;color:#b45309}.selected{background:#dcfce7;color:#15803d}.rejected{background:#fee2e2;color:#b91c1c}
+.actions button{background:transparent;font-size:16px;margin-right:7px}
+.empty{text-align:center;padding:35px;color:var(--muted)}
+.activity{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--primary);margin-top:5px;flex:none}
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;padding:20px;z-index:30}
+.modal.show{display:flex}
+.modal-box{background:var(--card);width:min(620px,100%);max-height:90vh;overflow:auto;border-radius:18px;padding:24px}
+.modal-head{display:flex;justify-content:space-between;margin-bottom:20px}
+.close{background:transparent;font-size:24px;color:var(--muted)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.field{display:flex;flex-direction:column;gap:7px}.field.full{grid-column:1/-1}
+.field label{font-size:13px;font-weight:700}.field input,.field select,.field textarea{padding:11px;border:1px solid var(--border);border-radius:9px;background:var(--card);color:var(--text)}
+textarea{min-height:90px;resize:vertical}
+.form-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+.secondary{padding:11px 17px;border-radius:9px;background:#e5e7eb;color:#111827;font-weight:700}
+.dark{--bg:#0b1120;--card:#111827;--text:#f8fafc;--muted:#94a3b8;--border:#263244}
+.dark .sidebar{background:#070b14}.dark .searchbar input,.dark .searchbar select,.dark .field input,.dark .field select,.dark .field textarea{background:#0f172a;color:#fff}.dark .secondary{background:#263244;color:#fff}
+.mobile-menu{display:none}
+.toast{position:fixed;right:25px;bottom:25px;background:#111827;color:#fff;padding:13px 18px;border-radius:10px;display:none;z-index:50}
+@media(max-width:900px){
+.sidebar{transform:translateX(-100%);transition:.25s}.sidebar.open{transform:translateX(0)}
+.main{margin-left:0;width:100%;padding:20px}.mobile-menu{display:block;background:var(--card);border:1px solid var(--border);padding:9px 12px;border-radius:9px;margin-right:10px}
+.topbar{align-items:flex-start}.top-left{display:flex}.stats{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}
+}
+@media(max-width:560px){.stats{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.topbar .primary{padding:10px}.topbar h1{font-size:22px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar" id="sidebar">
+  <div class="logo"><span>JT</span> JobTrack</div>
+  <nav class="nav">
+    <button class="active" data-page="dashboard"><span>▦</span>Dashboard</button>
+    <button data-page="applications"><span>▤</span>Applications</button>
+    <button data-page="analytics"><span>◔</span>Analytics</button>
+    <button data-page="reminders"><span>◷</span>Reminders</button>
+  </nav>
+  <div class="sidebar-bottom"><button class="theme-btn" id="themeBtn">☾ Toggle theme</button></div>
+</aside>
+
+<main class="main">
+<header class="topbar">
+  <div class="top-left"><button class="mobile-menu" id="menuBtn">☰</button><div><h1 id="pageTitle">Dashboard</h1><p>Track your job search smarter.</p></div></div>
+  <button class="primary" id="addBtn">＋ Add Application</button>
+</header>
+
+<section class="page active" id="dashboard">
+  <div class="stats">
+    <div class="stat"><div class="icon i1">📋</div><h3 id="total">0</h3><p>Total Applications</p></div>
+    <div class="stat"><div class="icon i2">🎯</div><h3 id="interviews">0</h3><p>Interviews</p></div>
+    <div class="stat"><div class="icon i3">🏆</div><h3 id="selected">0</h3><p>Selected</p></div>
+    <div class="stat"><div class="icon i4">📈</div><h3 id="rate">0%</h3><p>Success Rate</p></div>
+  </div>
+  <div class="grid">
+    <div class="card"><div class="card-head"><h2>Application Overview</h2><span class="muted">Current status</span></div><div class="chart-box"><canvas id="statusChart"></canvas></div></div>
+    <div class="card"><div class="card-head"><h2>Upcoming Interviews</h2></div><div id="upcoming"></div></div>
+  </div>
+  <div class="card" style="margin-top:20px"><div class="card-head"><h2>Recent Applications</h2><button class="secondary" onclick="showPage('applications')">View All</button></div><div class="table-wrap"><table><thead><tr><th>Company</th><th>Position</th><th>Status</th><th>Date</th></tr></thead><tbody id="recent"></tbody></table></div></div>
+</section>
+
+<section class="page" id="applications">
+  <div class="card">
+    <div class="card-head"><h2>My Applications</h2><span class="muted" id="countText">0 applications</span></div>
+    <div class="searchbar"><input id="search" placeholder="🔍 Search company or role..."><select id="filter"><option value="All">All Status</option><option>Applied</option><option>Interview</option><option>Selected</option><option>Rejected</option></select></div>
+    <div class="table-wrap"><table><thead><tr><th>Company</th><th>Position</th><th>Date Applied</th><th>Status</th><th>Interview</th><th>Actions</th></tr></thead><tbody id="appTable"></tbody></table></div>
+  </div>
+</section>
+
+<section class="page" id="analytics">
+  <div class="stats">
+    <div class="stat"><div class="icon i1">📨</div><h3 id="appliedCount">0</h3><p>Applied</p></div>
+    <div class="stat"><div class="icon i2">💬</div><h3 id="interviewCount">0</h3><p>Interview Stage</p></div>
+    <div class="stat"><div class="icon i3">✅</div><h3 id="selectedCount">0</h3><p>Offers / Selected</p></div>
+    <div class="stat"><div class="icon i4">❌</div><h3 id="rejectedCount">0</h3><p>Rejected</p></div>
+  </div>
+  <div class="grid"><div class="card"><div class="card-head"><h2>Status Distribution</h2></div><div class="chart-box"><canvas id="analyticsChart"></canvas></div></div><div class="card"><div class="card-head"><h2>Search Insights</h2></div><div id="insights" class="muted" style="line-height:2"></div></div></div>
+</section>
+
+<section class="page" id="reminders">
+  <div class="card"><div class="card-head"><h2>Interview & Follow-up Reminders</h2></div><div id="remindersList"></div></div>
+</section>
+</main>
+</div>
+
+<div class="modal" id="modal">
+<div class="modal-box">
+  <div class="modal-head"><h2 id="modalTitle">Add Application</h2><button class="close" id="closeBtn">×</button></div>
+  <form id="jobForm">
+    <div class="form-grid">
+      <div class="field"><label>Company *</label><input id="company" required placeholder="e.g. Google"></div>
+      <div class="field"><label>Job Role *</label><input id="role" required placeholder="e.g. Frontend Developer"></div>
+      <div class="field"><label>Date Applied *</label><input id="date" type="date" required></div>
+      <div class="field"><label>Status</label><select id="status"><option>Applied</option><option>Interview</option><option>Selected</option><option>Rejected</option></select></div>
+      <div class="field"><label>Interview Date</label><input id="interviewDate" type="date"></div>
+      <div class="field"><label>Salary / CTC</label><input id="salary" placeholder="e.g. 8 LPA"></div>
+      <div class="field full"><label>Job Link</label><input id="link" type="url" placeholder="https://..."></div>
+      <div class="field full"><label>Notes</label><textarea id="notes" placeholder="Recruiter details, preparation notes, follow-up..."></textarea></div>
+    </div>
+    <div class="form-actions"><button type="button" class="secondary" id="cancelBtn">Cancel</button><button class="primary" type="submit">Save Application</button></div>
+  </form>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY='jobtrack_applications_v1';
+let jobs=JSON.parse(localStorage.getItem(KEY)||'null') || [
+ {id:1,company:'TechNova',role:'Frontend Developer',date:'2026-08-20',status:'Interview',interviewDate:'2026-09-05',salary:'7 LPA',link:'',notes:'Prepare JavaScript and React.'},
+ {id:2,company:'PixelWorks',role:'UI/UX Intern',date:'2026-08-25',status:'Applied',interviewDate:'',salary:'4 LPA',link:'',notes:''},
+ {id:3,company:'CodeSphere',role:'Junior Developer',date:'2026-08-27',status:'Selected',interviewDate:'',salary:'6 LPA',link:'',notes:'Offer received.'},
+ {id:4,company:'DataBridge',role:'Python Intern',date:'2026-08-28',status:'Rejected',interviewDate:'',salary:'3 LPA',link:'',notes:''}
+];
+let editingId=null, statusChart, analyticsChart;
+
+function save(){localStorage.setItem(KEY,JSON.stringify(jobs))}
+function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function fmt(d){if(!d)return '—';return new Date(d+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}
+function badge(s){return `<span class="badge ${s.toLowerCase()}">${esc(s)}</span>`}
+function showPage(id){
+ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+ document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===id));
+ document.getElementById('pageTitle').textContent=id[0].toUpperCase()+id.slice(1);
+ if(id==='dashboard')renderDashboard(); if(id==='applications')renderTable(); if(id==='analytics')renderAnalytics(); if(id==='reminders')renderReminders();
+ document.getElementById('sidebar').classList.remove('open');
+}
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>showPage(b.dataset.page));
+document.getElementById('menuBtn').onclick=()=>document.getElementById('sidebar').classList.toggle('open');
+document.getElementById('themeBtn').onclick=()=>{document.body.classList.toggle('dark');localStorage.setItem('jobtrack_dark',document.body.classList.contains('dark'))};
+if(localStorage.getItem('jobtrack_dark')==='true')document.body.classList.add('dark');
+
+function renderDashboard(){
+ const total=jobs.length, interviews=jobs.filter(j=>j.status==='Interview').length, selected=jobs.filter(j=>j.status==='Selected').length;
+ document.getElementById('total').textContent=total;document.getElementById('interviews').textContent=interviews;document.getElementById('selected').textContent=selected;document.getElementById('rate').textContent=total?Math.round(selected/total*100)+'%':'0%';
+ const counts=['Applied','Interview','Selected','Rejected'].map(s=>jobs.filter(j=>j.status===s).length);
+ if(statusChart)statusChart.destroy();
+ statusChart=new Chart(document.getElementById('statusChart'),{type:'doughnut',data:{labels:['Applied','Interview','Selected','Rejected'],datasets:[{data:counts}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}});
+ const upcoming=jobs.filter(j=>j.interviewDate).sort((a,b)=>a.interviewDate.localeCompare(b.interviewDate)).slice(0,4);
+ document.getElementById('upcoming').innerHTML=upcoming.length?upcoming.map(j=>`<div class="activity"><div class="dot"></div><div><b>${esc(j.company)}</b><div class="muted">${esc(j.role)}</div><small>📅 ${fmt(j.interviewDate)}</small></div></div>`).join(''):'<div class="empty">No upcoming interviews.</div>';
+ document.getElementById('recent').innerHTML=jobs.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5).map(j=>`<tr><td><b>${esc(j.company)}</b></td><td>${esc(j.role)}</td><td>${badge(j.status)}</td><td>${fmt(j.date)}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">No applications yet.</td></tr>';
+}
+function renderTable(){
+ const q=document.getElementById('search').value.toLowerCase(), f=document.getElementById('filter').value;
+ const list=jobs.filter(j=>(f==='All'||j.status===f)&&(j.company+' '+j.role).toLowerCase().includes(q)).sort((a,b)=>b.date.localeCompare(a.date));
+ document.getElementById('countText').textContent=`${list.length} application${list.length!==1?'s':''}`;
+ document.getElementById('appTable').innerHTML=list.length?list.map(j=>`<tr>
+ <td><div class="company">${esc(j.company)}</div><div class="role">${esc(j.salary||'')}</div></td><td>${esc(j.role)}</td><td>${fmt(j.date)}</td><td>${badge(j.status)}</td><td>${fmt(j.interviewDate)}</td>
+ <td class="actions"><button title="Edit" onclick="editJob(${j.id})">✏️</button><button title="Delete" onclick="deleteJob(${j.id})">🗑️</button>${j.link?`<button title="Open link" onclick="window.open('${esc(j.link)}','_blank')">🔗</button>`:''}</td></tr>`).join(''):'<tr><td colspan="6" class="empty">No matching applications.</td></tr>';
+}
+document.getElementById('search').oninput=renderTable;document.getElementById('filter').onchange=renderTable;
+
+function renderAnalytics(){
+ const c=s=>jobs.filter(j=>j.status===s).length;
+ document.getElementById('appliedCount').textContent=c('Applied');document.getElementById('interviewCount').textContent=c('Interview');document.getElementById('selectedCount').textContent=c('Selected');document.getElementById('rejectedCount').textContent=c('Rejected');
+ if(analyticsChart)analyticsChart.destroy();
+ analyticsChart=new Chart(document.getElementById('analyticsChart'),{type:'bar',data:{labels:['Applied','Interview','Selected','Rejected'],datasets:[{label:'Applications',data:['Applied','Interview','Selected','Rejected'].map(c)}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
+ const success=jobs.length?Math.round(c('Selected')/jobs.length*100):0;
+ document.getElementById('insights').innerHTML=`Total applications: <b>${jobs.length}</b><br>Interview conversion: <b>${jobs.length?Math.round(c('Interview')/jobs.length*100):0}%</b><br>Selection rate: <b>${success}%</b><br>Rejection rate: <b>${jobs.length?Math.round(c('Rejected')/jobs.length*100):0}%</b>`;
+}
+function renderReminders(){
+ const today=new Date();today.setHours(0,0,0,0);
+ const list=jobs.filter(j=>j.interviewDate).sort((a,b)=>a.interviewDate.localeCompare(b.interviewDate));
+ document.getElementById('remindersList').innerHTML=list.length?list.map(j=>{
+  const d=new Date(j.interviewDate+'T00:00:00'), diff=Math.ceil((d-today)/86400000);
+  const label=diff<0?'Past':diff===0?'Today':`In ${diff} day${diff===1?'':'s'}`;
+  return `<div class="activity"><div class="dot"></div><div><b>${esc(j.company)} — ${esc(j.role)}</b><div>${fmt(j.interviewDate)} · <strong>${label}</strong></div><small class="muted">${esc(j.notes||'Review the job description and prepare for the interview.')}</small></div></div>`;
+ }).join(''):'<div class="empty">No interview reminders yet. Add an interview date to an application.</div>';
+}
+function openModal(id=null){
+ editingId=id;document.getElementById('modalTitle').textContent=id?'Edit Application':'Add Application';
+ const j=id?jobs.find(x=>x.id===id):null;
+ document.getElementById('company').value=j?.company||'';document.getElementById('role').value=j?.role||'';
+ document.getElementById('date').value=j?.date||new Date().toISOString().slice(0,10);document.getElementById('status').value=j?.status||'Applied';
+ document.getElementById('interviewDate').value=j?.interviewDate||'';document.getElementById('salary').value=j?.salary||'';
+ document.getElementById('link').value=j?.link||'';document.getElementById('notes').value=j?.notes||'';
+ document.getElementById('modal').classList.add('show');
+}
+function closeModal(){document.getElementById('modal').classList.remove('show')}
+document.getElementById('addBtn').onclick=()=>openModal();document.getElementById('closeBtn').onclick=closeModal;document.getElementById('cancelBtn').onclick=closeModal;
+document.getElementById('jobForm').onsubmit=e=>{
+ e.preventDefault();const data={company:company.value.trim(),role:role.value.trim(),date:date.value,status:status.value,interviewDate:interviewDate.value,salary:salary.value.trim(),link:link.value.trim(),notes:notes.value.trim()};
+ if(editingId){Object.assign(jobs.find(j=>j.id===editingId),data);toast('Application updated successfully!')}else{jobs.push({id:Date.now(),...data});toast('Application added successfully!')}
+ save();closeModal();renderDashboard();renderTable();renderAnalytics();renderReminders();
+};
+function editJob(id){openModal(id)}
+function deleteJob(id){if(confirm('Delete this application?')){jobs=jobs.filter(j=>j.id!==id);save();renderDashboard();renderTable();renderAnalytics();renderReminders();toast('Application deleted.')}}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2200)}
+renderDashboard();
+</script>
+</body>
+</html>

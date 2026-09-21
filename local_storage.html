@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h2>Net Banking</h2>
+
+    <input type="text" id="username" placeholder="Enter Username">
+    <br><br>
+
+    <input type="password" id="password" placeholder="Enter Password">
+    <br><br>
+
+    <button onclick="login()">Login</button>
+    <button onclick="ShowData()">Show Data</button>
+    <button onclick="logout()">Logout</button>
+
+    <p id="message"></p>
+
+    <div id="dataBox">
+        <h3>Account Details</h3>
+        <p><strong>Account Holder:</strong> <span id="accHolder"></span></p>
+        <p><strong>Account Number:</strong> <span id="accNumber"></span></p>
+        <p><strong>Balance:</strong> ₹<span id="accBalance"></span></p>
+    </div>
+
+    <script>
+        // Simulated database
+        const users = {
+            "Aditya": { password: "2910", name: "Aditya", accNo: "1234567890", balance: 500000 },
+            "Srinivas": { password: "1234", name: "Srinivas", accNo: "9876543210", balance: 750000 }
+        };
+
+        let loggedInUser = null;
+
+        function login() {
+            const username = document.getElementById("username").value.toLowerCase();
+            const password = document.getElementById("password").value;
+
+            if (users[username] && users[username].password === password) {
+                loggedInUser = users[username];
+                document.getElementById("message").innerText = "✅ Login Successful!";
+            } else {
+                document.getElementById("message").innerText = "❌ Invalid Username or Password!";
+            }
+        }
+
+        function ShowData() {
+            if (loggedInUser) {
+                document.getElementById("dataBox").style.display = "block";
+                document.getElementById("accHolder").innerText = loggedInUser.name;
+                document.getElementById("accNumber").innerText = loggedInUser.accNo;
+                document.getElementById("accBalance").innerText = loggedInUser.balance;
+            } else {
+                document.getElementById("message").innerText = "⚠ Please login first!";
+            }
+        }
+
+        function logout() {
+            loggedInUser = null;
+            document.getElementById("message").innerText = "👋 Logged out successfully!";
+            document.getElementById("dataBox").style.display = "none";
+        }
+    </script>
+
+
+</body>
+</html>
